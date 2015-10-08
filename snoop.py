@@ -143,12 +143,11 @@ class Cache:
     for data in self.cache[flow]:
       ld.append(data[1])
     return ld
+
   ## test if a flow is in a cache
-  def getflow(self,flow):
-    if flow in self.cache.keys():
-      return True
-    else:
-      return False
+  def __contains__(self,flow):
+    return flow in self.cache.keys()
+
   ## will modify the flow to change ts to None if applicable, it will
   ## also return the time since creation, and the udpate call
   def update(self,flow,seq):
@@ -164,6 +163,7 @@ class Cache:
       else:
         return None
     return None
+
   ## resend will look at the last 10 packets, and will resend it if the rtt value
   ## passes a threshold over the smoothed rtt value
   def resend(self,flow,rtt):
@@ -175,10 +175,12 @@ class Cache:
           sendp(Ether(dst="00:00:00:00:00:22")/(x[1])[IP], iface="eth2",verbose=0)
         self.cache[flow][self.cache[flow].index(x)] = (x[0],x[1],r)  
     return
+
   ## this function will be used to return the first unacked packet
   def unack(self,flow):
     if flow not in self.unacked:
       self.unacked[flow] = -1
+
     seq_in = []
     if self.unacked[flow] != -1:
       seq_in = [x[0] for x in self.cache[flow][self.unacked[flow]:]]
@@ -621,7 +623,7 @@ def snoop(pkt):
   ips = (sp["IP"].getfieldval('src'),sp["IP"].getfieldval('dst'))
 
   ##Tear down and create states
-  ## if you see a F in flags it means FIN, clean up all connection info.
+  ## if you see an F in flags it means FIN, clean up all connection info.
   logger.info("\tflags: %3s | src:%s dst:%s | seq:%s ack:%s" %\
      (sp.sprintf('%TCP.flags%'),str(ips[0]),str(ips[1]),seqnum,acknum))
 
